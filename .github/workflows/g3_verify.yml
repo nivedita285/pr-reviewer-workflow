@@ -1,0 +1,50 @@
+name: G3 — Verify PR Fixes
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to verify"
+        required: true
+        type: number
+      post_resolved:
+        description: "Post replies for resolved comments?"
+        required: false
+        type: boolean
+        default: true
+      post_unresolved:
+        description: "Post replies for unresolved/partial comments?"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r .github/requirements.txt
+
+      - name: Run Verifier
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_REPO: ${{ github.event.repository.name }}
+          GH_OWNER: ${{ github.repository_owner }}
+          GH_PR_NUMBER: ${{ inputs.pr_number }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          POST_RESOLVED: ${{ inputs.post_resolved }}
+          POST_UNRESOLVED: ${{ inputs.post_unresolved }}
+          CI: "true"
+        run: python .github/src/g3_verifier.py
