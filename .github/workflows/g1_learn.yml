@@ -1,0 +1,54 @@
+name: G1 — Learn Team Patterns
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_numbers:
+        description: "PR numbers to learn from (comma-separated, e.g. 12,15,18). Max 10."
+        required: true
+        type: string
+      senior_reviewers:
+        description: "Senior reviewer GitHub usernames (comma-separated). Leave blank to skip."
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  learn:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r .github/requirements.txt
+
+      - name: Run Pattern Learner
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_REPO: ${{ github.event.repository.name }}
+          GH_OWNER: ${{ github.repository_owner }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PR_NUMBERS: ${{ inputs.pr_numbers }}
+          SENIOR_REVIEWERS: ${{ inputs.senior_reviewers }}
+          CI: "true"
+        run: python .github/src/g1_pattern_learner.py
+
+      - name: Commit updated pattern store
+        run: |
+          git config user.name "pr-reviewer-bot"
+          git config user.email "pr-reviewer-bot@users.noreply.github.com"
+          git add .github/pattern_store/team_patterns.json .github/pattern_store/team_tone.json .github/pattern_store/team_config.json
+          git diff --staged --quiet || git commit -m "chore: update team patterns [skip ci]"
+          git push
