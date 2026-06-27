@@ -35,7 +35,7 @@ else:
     SENIOR_REVIEWERS = []
 
 # Persist senior reviewers to team_config.json
-TEAM_CONFIG_FILE = "../pattern_store/team_config.json"
+TEAM_CONFIG_FILE = "pattern_store/team_config.json"
 existing_config = {}
 if os.path.exists(TEAM_CONFIG_FILE):
     try:
@@ -370,8 +370,8 @@ print(f"Extracted {len(extraction_result['patterns'])} patterns")
 
 ranked = rank_patterns(extraction_result["patterns"])
 
-PATTERNS_FILE = "../pattern_store/team_patterns.json"
-TONE_FILE = "../pattern_store/team_tone.json"
+PATTERNS_FILE = "pattern_store/team_patterns.json"
+TONE_FILE = "pattern_store/team_tone.json"
 
 default_store = {
     "last_updated": "", "prs_analysed": [],
@@ -423,7 +423,6 @@ def merge_tone(existing_tone: dict, new_tone: dict, pr_nums: list) -> dict:
     return updated_tone
 
 
-TONE_FILE = "../pattern_store/team_tone.json"
 default_tone = {
     "last_updated": "",
     "prs_analysed": [],
